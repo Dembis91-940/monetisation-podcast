@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculateur de tarifs sponsor — PodMonétise</title>
+<meta name="description" content="Calculez le prix de votre sponsoring podcast : écoutes moyennes × CPM selon votre niche + bonus engagement. Méthode PodMonétise.">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI', system-ui, -apple-system, sans-serif; background:#070b14; color:#e8ecf5; min-height:100vh; padding:2rem 1.2rem 3rem; }
+  .wrap { max-width:760px; margin:0 auto; }
+  header { text-align:center; margin-bottom:2rem; }
+  .logo { font-weight:800; font-size:1.2rem; }
+  .logo span { background:linear-gradient(120deg,#22d3ee,#8b5cf6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  h1 { font-size:clamp(1.6rem, 4.5vw, 2.4rem); font-weight:800; margin-top:1rem;
+       background:linear-gradient(120deg,#a5f3fc,#c4b5fd); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:#8b9bb5; margin-top:.6rem; font-size:.95rem; line-height:1.6; }
+  .formule { display:inline-block; margin-top:1rem; padding:.5rem 1.2rem; border-radius:999px; font-size:.85rem; font-weight:600;
+             border:1px solid rgba(34,211,238,.35); color:#67e8f9; background:rgba(34,211,238,.08); }
+
+  .card { background:rgba(13,18,32,.75); border:1px solid rgba(255,255,255,.09); border-radius:20px; padding:1.8rem; margin-bottom:1.2rem; }
+  .card h2 { font-size:1.1rem; color:#fff; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+  .card h2 .n { width:26px; height:26px; border-radius:50%; background:linear-gradient(120deg,#06b6d4,#7c3aed); display:flex; align-items:center; justify-content:center; font-size:.8rem; flex-shrink:0; }
+
+  .field { margin-bottom:1.1rem; }
+  .field label { display:block; font-size:.85rem; color:#aab8d0; margin-bottom:.4rem; font-weight:600; }
+  .field input[type=number], .field select { width:100%; padding:.8rem 1rem; border-radius:12px; border:1px solid rgba(255,255,255,.14);
+           background:rgba(7,11,20,.7); color:#e8ecf5; font-size:.95rem; outline:none; font-family:inherit; }
+  .field input:focus, .field select:focus { border-color:#22d3ee; }
+  .field select option { background:#0d1220; }
+  .hint { font-size:.78rem; color:#5b6b85; margin-top:.35rem; }
+
+  /* Sliders engagement */
+  .seg { display:flex; gap:.5rem; flex-wrap:wrap; }
+  .seg button { flex:1; min-width:90px; padding:.7rem .6rem; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(7,11,20,.7);
+                color:#93a3bd; font-size:.85rem; cursor:pointer; font-weight:600; transition:all .2s; font-family:inherit; }
+  .seg button.active { background:linear-gradient(120deg,#06b6d4,#7c3aed); color:#fff; border-color:transparent; box-shadow:0 0 20px rgba(124,58,237,.35); }
+
+  /* Résultat */
+  .result { text-align:center; padding:1.6rem; }
+  .result .label { color:#8b9bb5; font-size:.85rem; text-transform:uppercase; letter-spacing:.1em; }
+  .result .big { font-size:clamp(2.2rem, 6vw, 3.2rem); font-weight:800; margin:.5rem 0;
+                 background:linear-gradient(120deg,#7dd3fc,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .result .detail { color:#93a3bd; font-size:.9rem; line-height:1.8; }
+  .result .detail b { color:#67e8f9; }
+
+  table { width:100%; border-collapse:collapse; margin-top:1.2rem; font-size:.88rem; }
+  th { text-align:left; color:#67e8f9; font-weight:600; padding:.6rem .4rem; border-bottom:1px solid rgba(255,255,255,.12); }
+  td { padding:.6rem .4rem; border-bottom:1px solid rgba(255,255,255,.06); color:#aab8d0; }
+  td.prix { color:#7dd3fc; font-weight:700; white-space:nowrap; }
+
+  .note { font-size:.8rem; color:#5b6b85; line-height:1.7; margin-top:1.4rem; border-top:1px solid rgba(255,255,255,.08); padding-top:1.2rem; }
+  footer { text-align:center; margin-top:2rem; color:#5b6b85; font-size:.82rem; }
+  footer a { color:#67e8f9; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">PodMonétise<span>.</span></div>
+    <h1>Calculateur de tarifs sponsor</h1>
+    <p class="sub">Combien vendre vos placements ? Entrez vos chiffres, la méthode fait le reste.</p>
+    <div class="formule">Prix = écoutes × CPM (2-4 € selon niche) × bonus engagement</div>
+  </header>
+
+  <div class="card">
+    <h2><span class="n">1</span> Votre audience</h2>
+    <div class="field">
+      <label for="ecoutes">Écoutes moyennes par épisode (10 derniers épisodes)</label>
+      <input type="number" id="ecoutes" min="0" step="50" value="1500" placeholder="ex : 1500">
+      <div class="hint">Moyenne des 10 derniers épisodes — pas le pic, pas le creux.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">2</span> Votre niche</h2>
+    <div class="field">
+      <label for="niche">Niche du podcast</label>
+      <select id="niche">
+        <option value="4">Finance, crypto, investissement — CPM 4 €</option>
+        <option value="3.75" selected>Tech, SaaS, B2B, business — CPM 3,75 €</option>
+        <option value="3.25">Santé, bien-être, développement personnel — CPM 3,25 €</option>
+        <option value="2.75">Éducation, culture, carrière — CPM 2,75 €</option>
+        <option value="2.25">Lifestyle, généraliste, divertissement — CPM 2,25 €</option>
+      </select>
+      <div class="hint">Plus l'audience a de la valeur pour un annonceur, plus le CPM monte.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">3</span> Votre engagement</h2>
+    <div class="field">
+      <label>Niveau d'engagement de vos auditeurs</label>
+      <div class="seg" id="seg-engagement">
+        <button data-bonus="0">Faible<br><small>+0 %</small></button>
+        <button data-bonus="0.15" class="active">Moyen<br><small>+15 %</small></button>
+        <button data-bonus="0.30">Fort<br><small>+30 %</small></button>
+      </div>
+      <div class="hint">Fort : complétion &gt; 70 %, &gt; 20 réactions/épisode, &gt; 5 % de clic sur vos liens promo. Moyen : 50-70 %, 5-20 réactions, 2-5 % de clic.</div>
+    </div>
+  </div>
+
+  <div class="card result">
+    <div class="label">Votre prix unitaire (spot de 60 secondes, 1 épisode)</div>
+    <div class="big" id="prix-unitaire">— €</div>
+    <div class="detail" id="detail-calcul">—</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="n">4</span> Votre grille de vente complète</h2>
+    <p style="color:#8b9bb5; font-size:.9rem; line-height:1.6;">Ne vendez jamais un épisode isolé. Voici vos formats, calculés automatiquement à partir de votre prix unitaire :</p>
+    <table>
+      <tr><th>Format</th><th>Calcul</th><th>Prix conseillé</th></tr>
+      <tr><td>Spot simple (60 s, 1 épisode)</td><td>prix unitaire</td><td class="prix" id="g-spot">—</td></tr>
+      <tr><td>Intégration dédiée (90 s, lecture personnalisée)</td><td>× 3 à 4</td><td class="prix" id="g-integration">—</td></tr>
+      <tr><td>Sponsoring de série (4 épisodes)</td><td>× 10 à 12</td><td class="prix" id="g-serie">—</td></tr>
+      <tr><td>Offre privée premium (trimestre)</td><td>× 25 à 30</td><td class="prix" id="g-trimestre">—</td></tr>
+      <tr><td>Deal sur mesure (épisode dédié + newsletter)</td><td>négocié</td><td class="prix">300 € et +</td></tr>
+    </table>
+    <div class="note">
+      ⚠️ <b style="color:#67e8f9;">Règle d'or :</b> annoncez toujours vos prix en grille (« 3 formules »), jamais un prix unique improvisé.
+      Acompte de 50 % à la signature, contrat d'une page. Tarifs HT — la TVA ne s'applique pas aux micro-entreprises sous le régime de la franchise en base.
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 PodMonétise — <a href="index.html">← Retour au site</a></p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  const ecoutesEl  = document.getElementById('ecoutes');
+  const nicheEl    = document.getElementById('niche');
+  const segEl      = document.getElementById('seg-engagement');
+  const prixEl     = document.getElementById('prix-unitaire');
+  const detailEl   = document.getElementById('detail-calcul');
+  let bonus = 0.15;
+
+  function fmt(n){
+    return n.toLocaleString('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits: n < 10 ? 2 : 0 });
+  }
+
+  function arrondi(n){
+    return Math.round(n * 100) / 100;
+  }
+
+  function calc(){
+    const ecoutes = parseFloat(ecoutesEl.value) || 0;
+    const cpm = parseFloat(nicheEl.value) || 2.25;
+    const milliers = ecoutes / 1000;
+
+    const unitaire = arrondi(milliers * cpm * (1 + bonus));
+    const integration = arrondi(unitaire * 3.5);
+    const serie = arrondi(unitaire * 11);
+    const trimestre = arrondi(unitaire * 27.5);
+
+    prixEl.textContent = fmt(unitaire);
+    detailEl.innerHTML =
+      'Base : <b>' + milliers.toLocaleString('fr-FR') + ' milliers</b> × CPM <b>' + cpm.toLocaleString('fr-FR') + ' €</b>' +
+      (bonus > 0 ? ' × bonus engagement <b>+' + Math.round(bonus * 100) + ' %</b>' : ' (sans bonus engagement)') +
+      ' = <b>' + fmt(unitaire) + '</b> par épisode.';
+
+    document.getElementById('g-spot').textContent = fmt(unitaire);
+    document.getElementById('g-integration').textContent = fmt(integration) + ' à ' + fmt(arrondi(unitaire * 4));
+    document.getElementById('g-serie').textContent = fmt(serie) + ' à ' + fmt(arrondi(unitaire * 12));
+    document.getElementById('g-trimestre').textContent = fmt(trimestre) + ' à ' + fmt(arrondi(unitaire * 30));
+  }
+
+  segEl.addEventListener('click', function(e){
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    segEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    bonus = parseFloat(btn.dataset.bonus) || 0;
+    calc();
+  });
+
+  ecoutesEl.addEventListener('input', calc);
+  nicheEl.addEventListener('change', calc);
+  calc();
+})();
+</script>
+</body>
+</html>

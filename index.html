@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PodMonétise — Kit Monétisation directe pour podcasteurs</title>
+<meta name="description" content="En 2026, Spotify rend les pubs de podcasts sautables. Les podcasteurs indépendants basculent en vente directe : sponsors, offres privées, abonnements, newsletter. Votre premier sponsor signé en 30 jours.">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Segoe UI', system-ui, -apple-system, sans-serif; background:#070b14; color:#e8ecf5; overflow-x:hidden; }
+  #bg { position:fixed; inset:0; z-index:0; }
+  .content { position:relative; z-index:2; }
+
+  /* ===== NAV ===== */
+  .nav { position:fixed; top:0; left:0; right:0; z-index:10; display:flex; justify-content:space-between; align-items:center;
+         padding:1.1rem 2.5rem; background:linear-gradient(rgba(7,11,20,.85), transparent); backdrop-filter:blur(6px); }
+  .logo { font-weight:800; font-size:1.15rem; letter-spacing:.02em; color:#fff; }
+  .logo span { background:linear-gradient(120deg,#22d3ee,#8b5cf6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .nav-links a { color:#aab8d0; text-decoration:none; margin-left:1.5rem; font-size:.9rem; transition:color .2s; }
+  .nav-links a:hover { color:#22d3ee; }
+  @media (max-width:720px){ .nav-links a { margin-left:.9rem; font-size:.8rem; } }
+
+  /* ===== HERO ===== */
+  .hero { position:relative; height:100vh; min-height:640px; display:flex; align-items:center; justify-content:center; text-align:center; perspective:1000px; }
+  .hero-inner { transform-style:preserve-3d; width:100%; padding:0 1.5rem; }
+  .layer { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; will-change:transform; }
+  .badge-2026 { display:inline-block; margin-bottom:1.4rem; padding:.45rem 1.1rem; border-radius:999px; font-size:.8rem; font-weight:600; letter-spacing:.06em;
+                border:1px solid rgba(34,211,238,.35); color:#67e8f9; background:rgba(34,211,238,.08); text-transform:uppercase; }
+  .title { font-size:clamp(2.3rem, 6.5vw, 5.2rem); font-weight:800; letter-spacing:-0.02em; line-height:1.08;
+           background:linear-gradient(120deg,#5eead4,#38bdf8,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent;
+           text-shadow:0 0 40px rgba(56,189,248,.25); }
+  .subtitle { font-size:clamp(1rem, 2.1vw, 1.35rem); color:#9fb0c9; margin-top:1.2rem; font-weight:300; max-width:760px; margin-left:auto; margin-right:auto; line-height:1.6; }
+  .cta { margin-top:2.4rem; display:inline-flex; gap:.8rem; flex-wrap:wrap; justify-content:center; }
+  .btn { padding:.9rem 2rem; border-radius:999px; font-weight:600; text-decoration:none; transition:transform .2s, box-shadow .2s; border:none; cursor:pointer; font-size:1rem; }
+  .btn-primary { background:linear-gradient(120deg,#06b6d4,#7c3aed); color:#fff; box-shadow:0 0 30px rgba(124,58,237,.4); }
+  .btn-ghost { border:1px solid rgba(255,255,255,.25); color:#dbe4f0; background:transparent; }
+  .btn:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 0 45px rgba(124,58,237,.65); }
+  .scroll-hint { position:absolute; bottom:2.2rem; left:50%; transform:translateX(-50%); color:#5b6b85; font-size:.75rem; letter-spacing:.25em; text-transform:uppercase; animation:float 2.4s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translate(-50%,0)} 50%{transform:translate(-50%,-10px)} }
+
+  /* ===== SECTIONS ===== */
+  section { padding:5.5rem 6vw; }
+  .section-head { text-align:center; max-width:780px; margin:0 auto 3rem; }
+  .section-head h2 { font-size:clamp(1.7rem, 4vw, 2.6rem); font-weight:800; letter-spacing:-0.01em;
+                     background:linear-gradient(120deg,#a5f3fc,#c4b5fd); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .section-head p { color:#8b9bb5; margin-top:1rem; line-height:1.7; }
+
+  /* ===== ALERTE ===== */
+  .alerte { max-width:900px; margin:0 auto; background:rgba(13,18,32,.75); border:1px solid rgba(34,211,238,.2); border-radius:20px; padding:2rem 2.2rem;
+            display:flex; gap:1.4rem; align-items:flex-start; backdrop-filter:blur(10px); }
+  .alerte .ico { font-size:2rem; line-height:1; }
+  .alerte h3 { color:#67e8f9; margin-bottom:.5rem; font-size:1.15rem; }
+  .alerte p { color:#aab8d0; line-height:1.7; font-size:.95rem; }
+  .alerte b { color:#e8ecf5; }
+
+  /* ===== MODULES ===== */
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.4rem; max-width:1100px; margin:0 auto; }
+  .module { background:rgba(13,18,32,.7); border:1px solid rgba(255,255,255,.09); border-radius:20px; padding:1.8rem;
+            transition:transform .25s, border-color .25s, box-shadow .25s; }
+  .module:hover { transform:translateY(-5px); border-color:rgba(139,92,246,.5); box-shadow:0 20px 50px rgba(0,0,0,.45); }
+  .module .num { font-size:.8rem; font-weight:700; color:#22d3ee; letter-spacing:.12em; text-transform:uppercase; }
+  .module h3 { font-size:1.25rem; margin:.6rem 0 .7rem; color:#fff; }
+  .module p { color:#93a3bd; font-size:.92rem; line-height:1.65; }
+  .module .gain { margin-top:1rem; font-size:.82rem; color:#6ee7b7; font-weight:600; }
+
+  /* ===== STATS ===== */
+  .stats { display:flex; gap:2.5rem; justify-content:center; flex-wrap:wrap; max-width:1000px; margin:3rem auto 0; text-align:center; }
+  .stat b { font-size:1.7rem; background:linear-gradient(120deg,#7dd3fc,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent; display:block; }
+  .stat span { color:#7c8aa5; font-size:.85rem; }
+
+  /* ===== OFFRES ===== */
+  .offres { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.4rem; max-width:1100px; margin:0 auto; align-items:stretch; }
+  .offre { position:relative; background:rgba(13,18,32,.75); border:1px solid rgba(255,255,255,.09); border-radius:22px; padding:2rem 1.8rem;
+           display:flex; flex-direction:column; transition:transform .25s, border-color .25s; }
+  .offre:hover { transform:translateY(-5px); }
+  .offre.populaire { border-color:rgba(139,92,246,.6); box-shadow:0 0 40px rgba(139,92,246,.18); }
+  .offre .flag { position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:linear-gradient(120deg,#06b6d4,#7c3aed); color:#fff;
+                 font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:.3rem .9rem; border-radius:999px; white-space:nowrap; }
+  .offre h3 { font-size:1.2rem; color:#fff; }
+  .offre .prix { font-size:2.4rem; font-weight:800; margin:.6rem 0 .2rem;
+                 background:linear-gradient(120deg,#7dd3fc,#a78bfa); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .offre .prix small { font-size:.95rem; font-weight:400; color:#7c8aa5; }
+  .offre ul { list-style:none; margin:1.2rem 0 1.6rem; flex:1; }
+  .offre li { color:#93a3bd; font-size:.9rem; padding:.45rem 0; padding-left:1.6rem; position:relative; line-height:1.5; }
+  .offre li::before { content:"✓"; position:absolute; left:0; color:#22d3ee; font-weight:700; }
+  .btn-commander { display:block; text-align:center; padding:.85rem 1rem; border-radius:12px; font-weight:700; text-decoration:none; font-size:.95rem;
+                   background:linear-gradient(120deg,#06b6d4,#7c3aed); color:#fff; box-shadow:0 0 25px rgba(124,58,237,.35); transition:transform .2s, box-shadow .2s; }
+  .btn-commander:hover { transform:translateY(-2px); box-shadow:0 0 40px rgba(124,58,237,.6); }
+  .btn-commander.ghost { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.18); box-shadow:none; }
+
+  /* ===== FORMULAIRE ===== */
+  .form-wrap { max-width:640px; margin:0 auto; background:rgba(13,18,32,.8); border:1px solid rgba(255,255,255,.1); border-radius:24px;
+               padding:2.5rem; backdrop-filter:blur(12px); }
+  .form-wrap h3 { font-size:1.4rem; color:#fff; text-align:center; margin-bottom:.4rem; }
+  .form-wrap .sub { text-align:center; color:#8b9bb5; font-size:.9rem; margin-bottom:1.8rem; }
+  .field { margin-bottom:1.2rem; }
+  .field label { display:block; font-size:.85rem; color:#aab8d0; margin-bottom:.4rem; font-weight:600; }
+  .field input, .field select { width:100%; padding:.85rem 1rem; border-radius:12px; border:1px solid rgba(255,255,255,.14);
+           background:rgba(7,11,20,.7); color:#e8ecf5; font-size:.95rem; outline:none; transition:border-color .2s; font-family:inherit; }
+  .field input:focus, .field select:focus { border-color:#22d3ee; }
+  .field select option { background:#0d1220; }
+  .btn-submit { width:100%; padding:1rem; border-radius:12px; border:none; cursor:pointer; font-weight:700; font-size:1rem; color:#fff;
+                background:linear-gradient(120deg,#06b6d4,#7c3aed); box-shadow:0 0 30px rgba(124,58,237,.4); transition:transform .2s, box-shadow .2s; font-family:inherit; }
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 0 45px rgba(124,58,237,.65); }
+  .btn-submit:disabled { opacity:.6; cursor:wait; }
+  #form-msg { text-align:center; margin-top:1.1rem; font-size:.9rem; min-height:1.4em; }
+  #form-msg.ok { color:#6ee7b7; }
+  #form-msg.err { color:#fca5a5; }
+
+  /* ===== FOOTER ===== */
+  footer { position:relative; z-index:2; border-top:1px solid rgba(255,255,255,.07); padding:2.5rem 6vw; text-align:center; }
+  footer .f-logo { font-weight:800; margin-bottom:.6rem; }
+  footer p { color:#5b6b85; font-size:.82rem; line-height:1.7; }
+  footer a { color:#67e8f9; text-decoration:none; }
+
+  /* ===== CARTE 3D (section démo) ===== */
+  .card { max-width:720px; margin:0 auto; background:rgba(13,18,32,.7); border:1px solid rgba(255,255,255,.09); border-radius:24px;
+          padding:2.5rem; backdrop-filter:blur(14px); transform-style:preserve-3d; will-change:transform; box-shadow:0 30px 80px rgba(0,0,0,.5); }
+  .card h2 { font-size:1.8rem; margin-bottom:1rem; background:linear-gradient(120deg,#a5f3fc,#818cf8); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .card p { color:#aab8d0; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo">PodMonétise<span>.</span></div>
+  <div class="nav-links">
+    <a href="#alerte">Le problème</a>
+    <a href="#modules">Les 6 modules</a>
+    <a href="#offres">Tarifs</a>
+    <a href="#commander">Commander</a>
+  </div>
+</nav>
+
+<canvas id="bg"></canvas>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="layer" data-depth="0.40">
+      <div style="padding-top:8vh;">
+        <span class="badge-2026">⚡ Actualité 2026 — pubs sautables</span>
+        <div class="title">La pub Spotify saute.<br>La vente directe vous reste.</div>
+      </div>
+    </div>
+    <div class="layer" data-depth="0.55" style="top:60%">
+      <div class="subtitle">En 2026, Spotify rend les publicités de podcasts sautables : les podcasteurs indépendants perdent leur revenu in-app du jour au lendemain. Mais votre audience, elle, ne saute pas. Ce kit vous fait basculer en vente directe : <b style="color:#7dd3fc;">sponsors, offres privées, abonnements, newsletter</b>.</div>
+    </div>
+    <div class="layer" data-depth="0.7" style="top:76%">
+      <div class="cta">
+        <a class="btn btn-primary" href="#offres">Je veux mon premier sponsor en 30 jours →</a>
+        <a class="btn btn-ghost" href="#modules">Découvrir le kit</a>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">Défilez</div>
+</section>
+
+<div class="content">
+
+<section id="alerte">
+  <div class="alerte">
+    <div class="ico">📉</div>
+    <div>
+      <h3>Ce qui vient de changer en 2026</h3>
+      <p>Spotify permet désormais à ses auditeurs de <b>sauter les publicités</b> insérées dans les podcasts. Conséquence directe : les annonceurs ne paient plus pour des écoutes non garanties, les régies réduisent leurs CPM, et les podcasteurs de <b>100 à 10 000 écoutes par épisode</b> voient leurs revenus pub fondre. <b>La bonne nouvelle :</b> les marques n'ont jamais eu autant besoin de toucher des audiences de niche engagées. Elles achètent directement aux créateurs — mais seulement à ceux qui savent se vendre.</p>
+    </div>
+  </div>
+</section>
+
+<section id="modules">
+  <div class="section-head">
+    <h2>Le Kit Monétisation directe</h2>
+    <p>6 modules concrets, rédigés au niveau expert, avec exemples réels et exercices. Pas de théorie : un système complet pour transformer votre audience en revenus directs.</p>
+  </div>
+  <div class="grid">
+    <div class="module">
+      <div class="num">Module 1</div>
+      <h3>🎯 Sponsors qui répondent</h3>
+      <p>Le pitch qui sort du lot, le média-kit qui rassure, la prospection ciblée. Vous arrêtez d'envoyer des emails génériques : chaque contact est préparé pour convertir.</p>
+      <div class="gain">→ 15-25 % de taux de réponse au lieu de 2 %</div>
+    </div>
+    <div class="module">
+      <div class="num">Module 2</div>
+      <h3>🔒 Offres privées</h3>
+      <p>Vendez des placements directs sans passer par une plateforme : sponsors de longue durée, partenariats locaux, marques qui ne savent pas où vous trouver. Contrats simples, paiements sécurisés.</p>
+      <div class="gain">→ 3 à 10× le CPM des régies publicitaires</div>
+    </div>
+    <div class="module">
+      <div class="num">Module 3</div>
+      <h3>♻️ Abonnements</h3>
+      <p>Transformez vos auditeurs les plus fidèles en revenu récurrent : offres d'abonnement, épisodes bonus, communauté privée. Le revenu prévisible qui ne dépend plus des annonceurs.</p>
+      <div class="gain">→ 100-500 €/mois récurrents dès 500 abonnés fidèles</div>
+    </div>
+    <div class="module">
+      <div class="num">Module 4</div>
+      <h3>📧 Newsletter monétisée</h3>
+      <p>Vos écoutes appartiennent à Spotify. Votre liste email vous appartient. Capturez vos auditeurs, envoyez une newsletter que les sponsors paient pour sponsoriser.</p>
+      <div class="gain">→ Un email vaut 10× plus qu'une écoute de pub</div>
+    </div>
+    <div class="module">
+      <div class="num">Module 5</div>
+      <h3>🧮 Calculateur de tarifs</h3>
+      <p>La méthode exacte pour fixer votre prix sponsor : CPM selon votre niche, bonus engagement, packs multi-épisodes. Vous ne sous-vendez plus jamais.</p>
+      <div class="gain">→ Fini les « c'est combien ? » improvisés</div>
+    </div>
+    <div class="module">
+      <div class="num">Module 6</div>
+      <h3>⚙️ Pipeline de vente</h3>
+      <p>Du premier email au contrat signé : relances automatisées, script de découverte, gestion des objections, facturation. Un système de vente qui tourne sans vous.</p>
+      <div class="gain">→ Votre premier sponsor signé en 30 jours</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>30 jours</b><span>pour signer votre premier sponsor</span></div>
+    <div class="stat"><b>3-10×</b><span>le CPM des régies publicitaires</span></div>
+    <div class="stat"><b>20 templates</b><span>prêts à remplir et à envoyer</span></div>
+  </div>
+</section>
+
+<section id="offres">
+  <div class="section-head">
+    <h2>Choisissez votre formule</h2>
+    <p>Paiement unique, accès immédiat. Chaque formule est livrée sous 24 h par email.</p>
+  </div>
+  <div class="offres">
+    <div class="offre">
+      <h3>Kit Essentiel</h3>
+      <div class="prix">49 €<small> une fois</small></div>
+      <ul>
+        <li>Le kit complet en PDF : 6 modules + checklist finale</li>
+        <li>La méthode de pitch sponsor étape par étape</li>
+        <li>La grille de calcul de vos tarifs (tableur inclus)</li>
+        <li>Garantie 14 jours satisfait ou remboursé</li>
+      </ul>
+      <a class="btn-commander ghost" href="#commander" data-offre="Kit Essentiel — 49 €">Commander le kit — 49 €</a>
+    </div>
+    <div class="offre populaire">
+      <div class="flag">⭐ Le plus choisi</div>
+      <h3>Kit Pro</h3>
+      <div class="prix">79 €<small> une fois</small></div>
+      <ul>
+        <li>Tout le kit Essentiel</li>
+        <li>Le calculateur de tarifs interactif (web, illimité)</li>
+        <li>Les 20 templates prêts à l'emploi (pitchs, emails, contrats, scripts)</li>
+        <li>Le script de prospection sponsor complet</li>
+        <li>Garantie 14 jours satisfait ou remboursé</li>
+      </ul>
+      <a class="btn-commander" href="#commander" data-offre="Kit Pro — 79 €">Commander le kit Pro — 79 €</a>
+    </div>
+    <div class="offre">
+      <h3>Kit Premium</h3>
+      <div class="prix">149 €<small> une fois</small></div>
+      <ul>
+        <li>Tout le kit Pro</li>
+        <li>Audit manuel personnalisé de votre podcast (30-45 min)</li>
+        <li>Vos 3 meilleurs sponsors cibles identifiés pour vous</li>
+        <li>Votre pitch réécrit sur mesure pour votre niche</li>
+        <li>Réponse sous 48 h via email</li>
+      </ul>
+      <a class="btn-commander ghost" href="#commander" data-offre="Kit Premium — 149 €">Commander le kit Premium — 149 €</a>
+    </div>
+  </div>
+</section>
+
+<section id="commander">
+  <div class="section-head">
+    <h2>Commander</h2>
+    <p>Remplissez le formulaire : vous recevez votre commande et vos accès par email sous 24 h. Pour le kit Premium, vous êtes recontacté sous 48 h pour planifier votre audit.</p>
+  </div>
+  <div class="form-wrap">
+    <h3>🚀 Je lance ma monétisation directe</h3>
+    <div class="sub">Réponse garantie sous 24 h ouvrées</div>
+    <form id="order-form">
+      <div class="field">
+        <label for="name">Votre nom</label>
+        <input type="text" id="name" name="name" placeholder="Prénom Nom" required>
+      </div>
+      <div class="field">
+        <label for="email">Votre email</label>
+        <input type="email" id="email" name="email" placeholder="vous@exemple.fr" required>
+      </div>
+      <div class="field">
+        <label for="offre">Formule choisie</label>
+        <select id="offre" name="offre" required>
+          <option value="Kit Essentiel — 49 €">Kit Essentiel — 49 €</option>
+          <option value="Kit Pro — 79 €" selected>Kit Pro — 79 € (le plus choisi)</option>
+          <option value="Kit Premium — 149 €">Kit Premium — 149 €</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-submit" id="btn-submit">Commander maintenant</button>
+      <div id="form-msg"></div>
+    </form>
+  </div>
+</section>
+
+<section id="garantie">
+  <div class="card" id="carte">
+    <h2>Une garantie qui vous protège</h2>
+    <p>Vous suivez les 6 modules, vous utilisez les templates, et si vous n'avez pas signé votre premier sponsor (ou au minimum envoyé votre première campagne de prospection structurée) sous 30 jours, écrivez-nous : <b style="color:#7dd3fc;">remboursement intégral sous 14 jours</b>, sans question. Le risque est de notre côté, pas du vôtre.</p>
+    <div class="stats">
+      <div class="stat"><b>14 jours</b><span>pour changer d'avis</span></div>
+      <div class="stat"><b>48 h</b><span>pour recevoir le kit</span></div>
+      <div class="stat"><b>100 %</b><span>des fichiers inclus</span></div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="f-logo">PodMonétise<span style="color:#22d3ee;">.</span></div>
+  <p>Kit Monétisation directe pour podcasteurs indépendants — 100-10 000 écoutes par épisode.<br>
+  © 2026 PodMonétise. Paiement sécurisé. Garantie 14 jours. <a href="mailto:contact@podmonetise.fr">contact@podmonetise.fr</a></p>
+</footer>
+
+<script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+<script>
+/* ============ SCÈNE 3D WEBGL — particules cyan/violet ============ */
+const canvas = document.getElementById('bg');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, .1, 100);
+camera.position.z = 8;
+
+/* Particules étoiles */
+const COUNT = 1800;
+const pos = new Float32Array(COUNT*3);
+const col = new Float32Array(COUNT*3);
+for (let i=0;i<COUNT;i++){
+  pos[i*3]   = (Math.random()-.5)*22;
+  pos[i*3+1] = (Math.random()-.5)*14;
+  pos[i*3+2] = (Math.random()-.5)*10 - 2;
+  /* teintes cyan (0.50-0.55) et violet (0.72-0.78) */
+  const h = Math.random() < .5 ? .50 + Math.random()*.06 : .72 + Math.random()*.08;
+  const c = new THREE.Color().setHSL(h, .85, .55 + Math.random()*.35);
+  col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b;
+}
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+geo.setAttribute('color', new THREE.BufferAttribute(col,3));
+const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size:.035, vertexColors:true, transparent:true, opacity:.85 }));
+scene.add(pts);
+
+/* Objet central : icosaèdre wireframe */
+const core = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(1.6, 1),
+  new THREE.MeshBasicMaterial({ color:0x22d3ee, wireframe:true, transparent:true, opacity:.28 })
+);
+scene.add(core);
+
+const core2 = new THREE.Mesh(
+  new THREE.IcosahedronGeometry(2.2, 1),
+  new THREE.MeshBasicMaterial({ color:0x8b5cf6, wireframe:true, transparent:true, opacity:.10 })
+);
+scene.add(core2);
+
+/* Anneaux orbitaux */
+const ring = new THREE.Mesh(
+  new THREE.TorusGeometry(3.1, .008, 8, 90),
+  new THREE.MeshBasicMaterial({ color:0x5eead4, transparent:true, opacity:.35 })
+);
+scene.add(ring);
+
+const mouse = { x:0, y:0 };
+addEventListener('mousemove', e => {
+  mouse.x = (e.clientX/innerWidth -.5)*2;
+  mouse.y = (e.clientY/innerHeight -.5)*2;
+});
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ============ PARALLAXE CSS 3D ============ */
+const layers = document.querySelectorAll('.layer');
+addEventListener('mousemove', e => {
+  const x = (e.clientX/innerWidth -.5)*2, y = (e.clientY/innerHeight -.5)*2;
+  layers.forEach(l => {
+    const d = parseFloat(l.dataset.depth);
+    l.style.transform = `translate3d(${x*22*d}px, ${y*16*d}px, 0)`;
+  });
+  core.rotation.y += .0008; core.rotation.x += .0003;
+  ring.rotation.z += .0005;
+});
+
+/* Scroll : profondeur + rotation */
+addEventListener('scroll', () => {
+  const t = scrollY/innerHeight;
+  camera.position.z = 8 - t*4;
+  core.rotation.y = t*Math.PI*2;
+});
+
+/* Carte 3D au survol */
+const carte = document.getElementById('carte');
+carte.addEventListener('mousemove', e => {
+  const r = carte.getBoundingClientRect();
+  const rx = (e.clientY - r.top)/r.height -.5, ry = (e.clientX - r.left)/r.width -.5;
+  carte.style.transform = `rotateX(${rx*-8}deg) rotateY(${ry*10}deg) translateZ(0)`;
+});
+carte.addEventListener('mouseleave', () => { carte.style.transform = 'rotateX(0) rotateY(0)'; });
+
+/* Boucle d'animation */
+(function animate(){
+  requestAnimationFrame(animate);
+  pts.rotation.y += .0006;
+  pts.rotation.x += .0002;
+  core.rotation.y += .0015;
+  core2.rotation.y -= .0008;
+  ring.rotation.x += .0012;
+  camera.position.x += (mouse.x*1.2 - camera.position.x)*.04;
+  camera.position.y += (-mouse.y*.9 - camera.position.y)*.04;
+  camera.lookAt(0,0,0);
+  renderer.render(scene, camera);
+})();
+
+/* ============ FORMULAIRE DE COMMANDE EMAILJS ============ */
+(function(){
+  const btnOffres = document.querySelectorAll('.btn-commander');
+  btnOffres.forEach(b => b.addEventListener('click', () => {
+    document.getElementById('offre').value = b.dataset.offre;
+  }));
+
+  const form = document.getElementById('order-form');
+  const msg = document.getElementById('form-msg');
+  const submit = document.getElementById('btn-submit');
+
+  function loadEmailJS(cb){
+    if (window.emailjs && window.emailjs.send) { cb(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+    s.onload = () => { try { emailjs.init({ publicKey: '8Pui4ZEqxW2jRVF7h' }); } catch(e){} cb(); };
+    s.onerror = () => { msg.textContent = 'Impossible de charger le service d\u2019envoi. Réessayez ou écrivez à contact@podmonetise.fr.'; msg.className = 'err'; submit.disabled = false; };
+    document.head.appendChild(s);
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const offre = document.getElementById('offre').value;
+    if (!name || !email || !offre) { msg.textContent = 'Merci de remplir tous les champs.'; msg.className = 'err'; return; }
+    submit.disabled = true;
+    submit.textContent = 'Envoi en cours…';
+    msg.textContent = '';
+    msg.className = '';
+
+    loadEmailJS(() => {
+      emailjs.send('service_cy1ytdb', 'template_xpo58cv', {
+        site: 'PodMonétise — Kit Monétisation directe',
+        name: name,
+        email: email,
+        question: 'COMMANDE : ' + offre
+      }).then(() => {
+        msg.textContent = '✅ Merci ' + name + ' ! Votre commande (' + offre + ') est bien reçue. Vous recevrez vos accès par email sous 24 h.';
+        msg.className = 'ok';
+        form.reset();
+        document.getElementById('offre').value = 'Kit Pro — 79 €';
+      }).catch(err => {
+        msg.textContent = '⚠️ L\u2019envoi a échoué. Réessayez ou écrivez directement à contact@podmonetise.fr.';
+        msg.className = 'err';
+      }).finally(() => {
+        submit.disabled = false;
+        submit.textContent = 'Commander maintenant';
+      });
+    });
+  });
+})();
+</script>
+
+<!-- ============ CHATBOT PodMonétise ============ -->
+<script src="chatbot-config.js"></script>
+<script src="chatbot.js"></script>
+
+</body>
+</html>
