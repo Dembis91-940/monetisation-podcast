@@ -11,6 +11,22 @@
 <meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary">
 <meta name="description" content="En 2026, Spotify rend les pubs de podcasts sautables. Les podcasteurs indépendants basculent en vente directe : sponsors, offres privées, abonnements, newsletter. Votre premier sponsor signé en 30 jours.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Kit Monétisation directe pour podcasteurs",
+  "description": "6 modules pour transformer votre audience en revenus directs : sponsors, offres privées, abonnements, newsletter monétisée, calculateur de tarifs et pipeline de vente. Premier sponsor signé en 30 jours.",
+  "offers": {
+    "@type": "AggregateOffer",
+    "priceCurrency": "EUR",
+    "lowPrice": "49",
+    "highPrice": "149",
+    "offerCount": "3",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; }
@@ -125,6 +141,12 @@
           padding:2.5rem; backdrop-filter:blur(14px); transform-style:preserve-3d; will-change:transform; box-shadow:0 30px 80px rgba(0,0,0,.5); }
   .card h2 { font-size:1.8rem; margin-bottom:1rem; background:linear-gradient(120deg,#a5f3fc,#818cf8); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .card p { color:#aab8d0; line-height:1.7; }
+  /* ---------- Révélation au scroll ---------- */
+  .reveal { opacity:0; transform:translateY(26px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity:1; transform:none; transition:none; }
+  }
 </style>
 </head>
 <body>
@@ -165,7 +187,7 @@
 <div class="content">
 
 <section id="alerte">
-  <div class="alerte">
+  <div class="alerte reveal">
     <div class="ico">📉</div>
     <div>
       <h3>Ce qui vient de changer en 2026</h3>
@@ -179,7 +201,7 @@
     <h2>Le Kit Monétisation directe</h2>
     <p>6 modules concrets, rédigés au niveau expert, avec exemples réels et exercices. Pas de théorie : un système complet pour transformer votre audience en revenus directs.</p>
   </div>
-  <div class="grid">
+  <div class="grid reveal">
     <div class="module">
       <div class="num">Module 1</div>
       <h3>🎯 Sponsors qui répondent</h3>
@@ -227,9 +249,9 @@
 <section id="offres">
   <div class="section-head">
     <h2>Choisissez votre formule</h2>
-    <p>Paiement unique, accès immédiat. Chaque formule est livrée sous 24 h par email.</p>
+    <p>Paiement unique par virement ou message direct, accès immédiat. Chaque formule est livrée sous 24 h par email.</p>
   </div>
-  <div class="offres">
+  <div class="offres reveal">
     <div class="offre">
       <h3>Kit Essentiel</h3>
       <div class="prix">49 €<small> une fois</small></div>
@@ -274,7 +296,7 @@
     <h2>Commander</h2>
     <p>Remplissez le formulaire : vous recevez votre commande et vos accès par email sous 24 h. Pour le kit Premium, vous êtes recontacté sous 48 h pour planifier votre audit.</p>
   </div>
-  <div class="form-wrap">
+  <div class="form-wrap reveal">
     <h3>🚀 Je lance ma monétisation directe</h3>
     <div class="sub">Réponse garantie sous 24 h ouvrées</div>
     <form id="order-form">
@@ -481,6 +503,19 @@ carte.addEventListener('mouseleave', () => { carte.style.transform = 'rotateX(0)
 })();
 </script>
 
+<script>
+/* Révélation au scroll — progressif, non intrusif */
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) { for (var i=0;i<els.length;i++) els[i].classList.add('visible'); return; }
+  var io = new IntersectionObserver(function(entries){
+    for (var j=0;j<entries.length;j++){
+      if (entries[j].isIntersecting || entries[j].boundingClientRect.top < window.innerHeight) { entries[j].target.classList.add('visible'); io.unobserve(entries[j].target); }
+    }
+  }, { threshold:.12, rootMargin:'0px 0px -8% 0px' });
+  for (var k=0;k<els.length;k++) io.observe(els[k]);
+})();
+</script>
 <!-- ============ CHATBOT PodMonétise ============ -->
 <script src="chatbot-config.js"></script>
 <script src="chatbot.js"></script>
